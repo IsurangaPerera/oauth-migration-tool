@@ -27,5 +27,11 @@
 
     <artifactId>org.wso2.carbon.oauth.migration.common</artifactId>
     <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.carbon.oauth.migration</groupId>
+            <artifactId>org.wso2.carbon.oauth.migration.log</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

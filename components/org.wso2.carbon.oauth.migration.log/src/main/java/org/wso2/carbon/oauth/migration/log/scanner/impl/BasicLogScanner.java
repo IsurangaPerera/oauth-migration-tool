@@ -20,6 +20,7 @@
 
 package org.wso2.carbon.oauth.migration.log.scanner.impl;
 
+import org.wso2.carbon.oauth.migration.common.util.MigrationUtil;
 import org.wso2.carbon.oauth.migration.log.model.LogEntry;
 import org.wso2.carbon.oauth.migration.log.processor.LogStatementProcessor;
 import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
@@ -40,7 +41,8 @@ public class BasicLogScanner implements LogScanner {
     @Override
     public void processAuditLogs() {
 
-        crawlDirectoryAndProcessFiles(new File(logDirectoryPath));
+        List<String> entryList = MigrationUtil.filterLogEntryList(crawlDirectoryAndProcessFiles
+                (new File(logDirectoryPath)));
 
     }
 
