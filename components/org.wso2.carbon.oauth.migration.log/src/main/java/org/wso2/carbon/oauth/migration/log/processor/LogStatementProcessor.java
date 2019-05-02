@@ -73,7 +73,6 @@ public class LogStatementProcessor implements Callable<List<LogEntry>> {
 
     private boolean isFederatedLogin(String logEntry) {
 
-        return logEntry.contains(CommonConstants.LOGIN_ACTION) & logEntry.contains(CommonConstants
-                .AUTHENTICATED_USER_TENANT_DOMAIN);
+        return logEntry.contains(CommonConstants.LOGIN_ACTION);
     }
 }

@@ -23,6 +23,5 @@ package org.wso2.carbon.oauth.migration.common.util;
 public class CommonConstants {
 
     public static final String AUTHENTICATED_USER = "AuthenticatedUser";
-    public static final String LOGIN_ACTION = "Action : Login";
-    public static final String AUTHENTICATED_USER_TENANT_DOMAIN = "\"AuthenticatedUserTenantDomain\" : \"null\"";
+    public static final String LOGIN_ACTION = "Action : LoginStepSuccess";
 }
