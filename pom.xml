@@ -45,8 +45,8 @@
     </scm>
 
     <modules>
-        <module>components/org.wso2.carbon.oauth.migration.log-scanner</module>
         <module>components/org.wso2.carbon.oauth.migration.common</module>
+        <module>components/org.wso2.carbon.oauth.migration.log</module>
     </modules>
 
     <repositories>
@@ -123,12 +123,12 @@
         <dependencies>
             <dependency>
                 <groupId>org.wso2.carbon.oauth.migration</groupId>
-                <artifactId>org.wso2.carbon.oauth.migration.log-scanner</artifactId>
+                <artifactId>org.wso2.carbon.oauth.migration.common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.oauth.migration</groupId>
-                <artifactId>org.wso2.carbon.oauth.migration.common</artifactId>
+                <artifactId>org.wso2.carbon.oauth.migration.log</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

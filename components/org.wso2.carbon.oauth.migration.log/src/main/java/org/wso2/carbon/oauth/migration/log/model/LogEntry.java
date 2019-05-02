@@ -18,7 +18,32 @@
  *
  */
 
-package org.wso2.carbon.oauth.migration.log.scanner.impl;
+package org.wso2.carbon.oauth.migration.log.model;
 
-public class LogScannerImpl {
+import java.sql.Timestamp;
+
+public class LogEntry {
+
+    private Timestamp timestamp;
+    private String authenticatedUser;
+
+    public void setTimestamp(Timestamp timestamp) {
+
+        this.timestamp = timestamp;
+    }
+
+    public Timestamp getTimestamp() {
+
+        return timestamp;
+    }
+
+    public void setAuthenticatedUser(String authenticatedUser) {
+
+        this.authenticatedUser = authenticatedUser;
+    }
+
+    public String getAuthenticatedUser() {
+
+        return authenticatedUser;
+    }
 }

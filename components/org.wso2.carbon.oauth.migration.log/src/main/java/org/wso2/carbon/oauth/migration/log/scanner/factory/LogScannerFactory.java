@@ -20,5 +20,21 @@
 
 package org.wso2.carbon.oauth.migration.log.scanner.factory;
 
+import org.wso2.carbon.oauth.migration.log.scanner.impl.BasicLogScanner;
+
 public class LogScannerFactory {
+
+    private static LogScannerFactory logScannerFactory = new LogScannerFactory();
+
+    private LogScannerFactory() {}
+
+    public static LogScannerFactory getInstance() {
+
+        return logScannerFactory;
+    }
+
+    public BasicLogScanner getBasicLogScanner() {
+
+        return new BasicLogScanner();
+    }
 }

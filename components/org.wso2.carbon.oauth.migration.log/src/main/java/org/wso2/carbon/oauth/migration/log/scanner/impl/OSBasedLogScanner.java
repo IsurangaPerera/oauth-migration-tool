@@ -18,7 +18,7 @@
  *
  */
 
-package org.wso2.carbon.oauth.migration.log.scanner;
+package org.wso2.carbon.oauth.migration.log.scanner.impl;
 
-public interface LogScanner {
+public class OSBasedLogScanner extends BasicLogScanner {
 }

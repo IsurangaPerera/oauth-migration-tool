@@ -25,7 +25,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>org.wso2.carbon.oauth.migration.log-scanner</artifactId>
+    <artifactId>org.wso2.carbon.oauth.migration.log</artifactId>
     <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.carbon.oauth.migration</groupId>
+            <artifactId>org.wso2.carbon.oauth.migration.common</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
