@@ -20,8 +20,8 @@
 
 package org.wso2.carbon.oauth.migration.log.processor;
 
+import org.wso2.carbon.oauth.migration.common.model.LogEntry;
 import org.wso2.carbon.oauth.migration.common.util.CommonConstants;
-import org.wso2.carbon.oauth.migration.log.model.LogEntry;
 
 import java.io.BufferedReader;
 import java.io.File;

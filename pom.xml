@@ -47,6 +47,7 @@
     <modules>
         <module>components/org.wso2.carbon.oauth.migration.common</module>
         <module>components/org.wso2.carbon.oauth.migration.log</module>
+        <module>components/org.wso2.carbon.oauth.migration.sql</module>
     </modules>
 
     <repositories>

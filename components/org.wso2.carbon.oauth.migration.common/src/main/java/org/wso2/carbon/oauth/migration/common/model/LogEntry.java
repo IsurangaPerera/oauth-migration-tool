@@ -18,7 +18,7 @@
  *
  */
 
-package org.wso2.carbon.oauth.migration.log.model;
+package org.wso2.carbon.oauth.migration.common.model;
 
 import java.sql.Timestamp;
 

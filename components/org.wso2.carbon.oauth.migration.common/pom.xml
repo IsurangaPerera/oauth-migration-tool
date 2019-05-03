@@ -29,8 +29,12 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>org.wso2.carbon.oauth.migration</groupId>
-            <artifactId>org.wso2.carbon.oauth.migration.log</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
         </dependency>
     </dependencies>
 

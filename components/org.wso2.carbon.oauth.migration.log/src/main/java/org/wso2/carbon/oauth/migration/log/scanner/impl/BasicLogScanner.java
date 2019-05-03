@@ -20,8 +20,8 @@
 
 package org.wso2.carbon.oauth.migration.log.scanner.impl;
 
+import org.wso2.carbon.oauth.migration.common.model.LogEntry;
 import org.wso2.carbon.oauth.migration.common.util.MigrationUtil;
-import org.wso2.carbon.oauth.migration.log.model.LogEntry;
 import org.wso2.carbon.oauth.migration.log.processor.LogStatementProcessor;
 import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
 

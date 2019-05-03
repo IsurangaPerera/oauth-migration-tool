@@ -20,7 +20,7 @@
 
 package org.wso2.carbon.oauth.migration.common.util;
 
-import org.wso2.carbon.oauth.migration.log.model.LogEntry;
+import org.wso2.carbon.oauth.migration.common.model.LogEntry;
 
 import java.util.HashMap;
 import java.util.List;

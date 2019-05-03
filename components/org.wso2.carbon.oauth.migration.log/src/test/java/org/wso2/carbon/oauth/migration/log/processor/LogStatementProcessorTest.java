@@ -21,7 +21,7 @@
 package org.wso2.carbon.oauth.migration.log.processor;
 
 import org.testng.annotations.Test;
-import org.wso2.carbon.oauth.migration.log.model.LogEntry;
+import org.wso2.carbon.oauth.migration.common.model.LogEntry;
 
 import java.io.File;
 import java.util.List;
