@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,24 +16,24 @@
  * under the License.
  */
 
-package org.wso2.carbon.oauth.migration.sql.exception;
-
-import org.wso2.carbon.oauth.migration.common.exception.ModuleException;
+package org.wso2.carbon.oauth.migration.common.runtime;
 
 /**
- * Represents an generic exception occurred in the SQL module.
+ * Interface for a specific processor config.
+ * e.g. In RDBMS processors, this carries set of Datasource configurations.
  */
-public class SQLModuleException extends ModuleException {
+public interface ScannerConfig {
 
-    public SQLModuleException(String message) {
-        super(message);
-    }
+    void setLogFilePath(String logFilePath);
 
-    public SQLModuleException(Throwable throwable) {
-        super(throwable);
-    }
+    String getLogFilePath();
 
-    public SQLModuleException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
+    void setLogFileRegEx(String logFileRegEx);
+
+    String getLogFileRegEx();
+
+    void setLogStatementPattern(String logStatementPattern);
+
+    String getLogStatementPattern();
+
 }

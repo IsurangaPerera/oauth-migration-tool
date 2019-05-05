@@ -21,6 +21,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
 
     <parent>
         <groupId>org.wso2</groupId>
@@ -45,9 +51,12 @@
     </scm>
 
     <modules>
+
         <module>components/org.wso2.carbon.oauth.migration.common</module>
         <module>components/org.wso2.carbon.oauth.migration.log</module>
         <module>components/org.wso2.carbon.oauth.migration.sql</module>
+        <module>components/org.wso2.carbon.oauth.migration.conf</module>
+        <module>components/org.wso2.carbon.oauth.migration.tool</module>
     </modules>
 
     <repositories>
@@ -133,9 +142,29 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.oauth.migration</groupId>
+                <artifactId>org.wso2.carbon.oauth.migration.sql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.oauth.migration</groupId>
+                <artifactId>org.wso2.carbon.oauth.migration.conf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.oauth.migration</groupId>
+                <artifactId>org.wso2.carbon.oauth.migration.tool</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.datasources</groupId>
                 <artifactId>org.wso2.carbon.datasource.core</artifactId>
                 <version>${carbon.datasource.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.db2.jcc</groupId>
+                <artifactId>db2jcc</artifactId>
+                <version>${db2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
@@ -252,7 +281,7 @@
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
 
-        <carbon.datasource.version>1.0.2</carbon.datasource.version>
+        <carbon.datasource.version>1.0.3</carbon.datasource.version>
 
         <com.h2database.wso2.version>1.2.140.wso2v3</com.h2database.wso2.version>
 
@@ -278,6 +307,8 @@
         <!-- Carbon component versions -->
         <carbon.kernel.version>4.4.38</carbon.kernel.version>
         <carbon.analytics.version>1.3.14</carbon.analytics.version>
+
+        <db2.version>db2jcc4</db2.version>
 
         <!-- Third party component versions -->
         <jaxb.api.version>2.2.12</jaxb.api.version>

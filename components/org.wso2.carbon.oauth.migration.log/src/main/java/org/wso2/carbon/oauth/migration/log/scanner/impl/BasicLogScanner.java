@@ -21,9 +21,10 @@
 package org.wso2.carbon.oauth.migration.log.scanner.impl;
 
 import org.wso2.carbon.oauth.migration.common.model.LogEntry;
+import org.wso2.carbon.oauth.migration.common.runtime.ScannerConfig;
 import org.wso2.carbon.oauth.migration.common.util.MigrationUtil;
-import org.wso2.carbon.oauth.migration.log.processor.LogStatementProcessor;
 import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
+import org.wso2.carbon.oauth.migration.log.processor.LogStatementProcessor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,19 +38,24 @@ import java.util.concurrent.Future;
 public class BasicLogScanner implements LogScanner {
 
     private String logDirectoryPath;
+    private ScannerConfig scannerConfig;
 
     @Override
-    public void processAuditLogs() {
+    public List<String> processAuditLogs() {
 
-        List<String> entryList = MigrationUtil.filterLogEntryList(crawlDirectoryAndProcessFiles
-                (new File(logDirectoryPath)));
-
+        return MigrationUtil.filterLogEntryList(crawlDirectoryAndProcessFiles(new File(logDirectoryPath)));
     }
 
     @Override
     public void setLogDirectoryPath(String logDirectoryPath) {
 
         this.logDirectoryPath = logDirectoryPath;
+    }
+
+    @Override
+    public void setScannerConfig(ScannerConfig scannerConfig) {
+
+        this.scannerConfig = scannerConfig;
     }
 
     @Override

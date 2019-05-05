@@ -22,9 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.datasource.core.DataSourceManager;
 import org.wso2.carbon.datasource.core.beans.CarbonDataSource;
+import org.wso2.carbon.datasource.core.exception.DataSourceException;
 import org.wso2.carbon.oauth.migration.sql.exception.SQLModuleException;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
 
 /**
  * Represents a data source configuration.
@@ -33,40 +35,62 @@ public class DataSourceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourceConfig.class);
 
-    private String dataSourceName;
+    private static DataSourceConfig dataSourceConfig = new DataSourceConfig();
+    private String datasourceName;
+
+    private DataSourceConfig() {}
+
+    public static DataSourceConfig getInstance() {
+
+        return dataSourceConfig;
+    }
+
     private DataSourceManager dataSourceManager;
 
     /**
-     * Constructs the config with given datasource name and the given datasource manager.
-     *
-     * @param dataSourceName Name of the data source.
-     * @param dataSourceManager Data source manager instance.
-     */
-    public DataSourceConfig(String dataSourceName, DataSourceManager dataSourceManager) {
-        
-        this.dataSourceName = dataSourceName;
-        this.dataSourceManager = dataSourceManager;
-    }
-
-    /**
-     * Returns the datasource for the given configuration, given by current datasource name.
+     * Returns the datasource for the given configuration.
      *
      * @return Instance of Datasource.
      * @throws SQLModuleException Error while finding the datasource.
      */
     public DataSource getDatasource() throws SQLModuleException {
-        
+
         if (dataSourceManager.getDataSourceRepository() != null) {
             CarbonDataSource carbonDataSource = dataSourceManager.getDataSourceRepository()
-                    .getDataSource(dataSourceName);
+                    .getDataSource(datasourceName);
             if (carbonDataSource != null) {
                 return (DataSource) carbonDataSource.getDataSourceObject();
             } else {
-                log.error("Could not find a datasource for the name : " + dataSourceName);
+                log.error("Could not find a datasource");
             }
-        } else {
-            throw new SQLModuleException("Datasource manager is not initialized.");
+            return  null;
         }
-        return null;
+        throw new SQLModuleException("Datasource manager is not initialized.");
+    }
+
+    /**
+     * Reads the datasource from the file.
+     *
+     * @throws SQLModuleException Error while finding the datasource.
+     */
+    public void readProcessorConfig(Path path) throws SQLModuleException {
+
+        DataSourceManager dataSourceManager = DataSourceManager.getInstance();
+        try {
+            DataSourceManager.getInstance().initDataSources(path.toAbsolutePath().toString());
+            this.dataSourceManager = dataSourceManager;
+        } catch (DataSourceException e) {
+            throw new SQLModuleException("Error occurred while initializing the data source.", e);
+        }
+    }
+
+    public void setDatasourceName(String datasourceName) {
+
+        this.datasourceName = datasourceName;
+    }
+
+    public String getDatasourceName() {
+
+        return datasourceName;
     }
 }

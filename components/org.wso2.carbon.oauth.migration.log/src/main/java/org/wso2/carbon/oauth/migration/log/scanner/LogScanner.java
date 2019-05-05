@@ -20,11 +20,17 @@
 
 package org.wso2.carbon.oauth.migration.log.scanner;
 
+import org.wso2.carbon.oauth.migration.common.runtime.ScannerConfig;
+
+import java.util.List;
+
 public interface LogScanner {
 
-    void processAuditLogs();
+    List<String> processAuditLogs();
 
     void setLogDirectoryPath(String directory);
+
+    void setScannerConfig(ScannerConfig scannerConfig);
 
     String getLogDirectoryPath();
 

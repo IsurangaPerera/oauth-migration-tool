@@ -1,0 +1,15 @@
+{
+  "processor" : {
+    "type": "basic-log-scanner"
+  },
+  "log-config": {
+    "processor" : "basic-log-scanner",
+    "log-file-path" : "logs",
+    "log-file-name-regex" : "audit.log",
+    "log-statement-pattern" : "((\"?[\\w]+\"?)\\s:\\s(\"?[\\w]+(@\\w+.\\w+)?=?\"?))"
+  },
+  "datasource" : {
+    "datasource-path": "/Users/phoenix/wso2/oauth-migration-tool/components/org.wso2.carbon.oauth.migration.tool/target/oauth-migration-tool-1.0-SNAPSHOT/conf/datasources",
+    "datasource-name" : "WSO2_CARBON_DB"
+  }
+}
