@@ -28,10 +28,5 @@ public interface LogScanner {
 
     List<String> processAuditLogs();
 
-    void setLogDirectoryPath(String directory);
-
     void setScannerConfig(ScannerConfig scannerConfig);
-
-    String getLogDirectoryPath();
-
 }

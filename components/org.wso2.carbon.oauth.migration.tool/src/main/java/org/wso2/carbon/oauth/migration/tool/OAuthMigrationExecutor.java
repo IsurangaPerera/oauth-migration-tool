@@ -27,6 +27,8 @@ import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
 import org.wso2.carbon.oauth.migration.runtime.OAuthMigrationExecutionException;
 import org.wso2.carbon.oauth.migration.sql.dao.FederatedUserMgtDAO;
 
+import java.io.Console;
+import java.text.MessageFormat;
 import java.util.List;
 
 public class OAuthMigrationExecutor {
@@ -42,7 +44,6 @@ public class OAuthMigrationExecutor {
 
     /**
      * Executes the engine.
-     * This will start multiple processors in parallel threads.
      *
      * @throws OAuthMigrationExecutionException upon any error while executing the set of instructions.
      */
@@ -54,14 +55,38 @@ public class OAuthMigrationExecutor {
         try {
             FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
             federatedUsersFromDB = federatedUserMgtDAO.getActiveFederatedUsers();
-            federatedUsersFromLogs = logScanner.processAuditLogs();
+            log.info(MessageFormat.format("{0} federated user(s) with active tokens and " +
+                    "authorization codes fetched from the DB", federatedUsersFromDB.size()));
 
-            federatedUserMgtDAO.revokeTokens(federatedUsersFromLogs);
-            List difference = ListUtils.subtract(federatedUsersFromDB, federatedUsersFromLogs);
-            federatedUserMgtDAO.appendIDP(difference);
+            if (federatedUsersFromDB.size() > 0) {
+                federatedUsersFromLogs = logScanner.processAuditLogs();
+                log.info(MessageFormat.format("{0} federated user(s) with active tokens and " +
+                        "authorization codes fetched from audit logs", federatedUsersFromLogs.size()));
 
+                if (isAccessRevokable(federatedUsersFromLogs)) {
+                    federatedUserMgtDAO.revokeTokensAndCodes(federatedUsersFromLogs);
+                    federatedUsersFromDB = ListUtils.subtract(federatedUsersFromDB, federatedUsersFromLogs);
+                }
+            }
+            federatedUserMgtDAO.migrateFederatedUsers();
         } catch (ModuleException e) {
             throw new OAuthMigrationExecutionException(e.getMessage());
         }
+    }
+
+    private boolean isAccessRevokable(List<String> federatedUsersFromLogs) throws OAuthMigrationExecutionException {
+
+        if (federatedUsersFromLogs.size() > 0) {
+            Console console = System.console();
+            if (console == null) {
+                throw new OAuthMigrationExecutionException("Unable to fetch the console");
+            }
+            console.printf(MessageFormat.format("{0} federated users found from audit logs who have multiple " +
+                    "login entries. Do you want to revoke associated tokens and authorization codes?(yes/no) : ",
+                    federatedUsersFromLogs.size()));
+            String response = console.readLine().trim();
+            return response.equalsIgnoreCase("y") || response.equalsIgnoreCase("yes");
+        }
+        return false;
     }
 }

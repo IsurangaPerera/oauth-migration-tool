@@ -23,8 +23,7 @@ package org.wso2.carbon.oauth.migration.config;
  */
 public class ConfigConstants {
 
-    public static final String PROCESSOR_TYPE = "type";
-    public static final String CONFIG_ELEMENT_PROCESSOR = "processor";
+    public static final String CONFIG_ELEMENT_SCANNER = "scanner";
     public static final String LOG_FILE_PATH = "log-file-path";
     public static final String LOG_FILE_NAME_REGEX = "log-file-name-regex";
     public static final String DATASOURCE = "datasource";

@@ -20,21 +20,34 @@
 
 package org.wso2.carbon.oauth.migration.log.scanner.factory;
 
+import org.wso2.carbon.oauth.migration.common.util.CommonConstants;
+import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
 import org.wso2.carbon.oauth.migration.log.scanner.impl.BasicLogScanner;
+import org.wso2.carbon.oauth.migration.log.scanner.impl.OSBasedLogScanner;
 
 public class LogScannerFactory {
 
-    private static LogScannerFactory logScannerFactory = new LogScannerFactory();
-
     private LogScannerFactory() {}
 
-    public static LogScannerFactory getInstance() {
+    public static LogScanner getScanner(String scanner) {
 
-        return logScannerFactory;
+        switch(scanner) {
+            case CommonConstants.BASIC_LOG_SCANNER :
+                return getBasicLogScanner();
+            case CommonConstants.OS_BASED_LOG_SCANNER :
+                return getOSBasedLogScanner();
+            default :
+                return getBasicLogScanner();
+        }
     }
 
-    public BasicLogScanner getBasicLogScanner() {
+    public static BasicLogScanner getBasicLogScanner() {
 
         return new BasicLogScanner();
+    }
+
+    public static OSBasedLogScanner getOSBasedLogScanner() {
+
+        return new OSBasedLogScanner();
     }
 }

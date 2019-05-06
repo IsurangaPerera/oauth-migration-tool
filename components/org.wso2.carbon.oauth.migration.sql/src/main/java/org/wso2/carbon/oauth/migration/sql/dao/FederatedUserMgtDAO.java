@@ -31,11 +31,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FederatedUserMgtDAO {
 
     private static final Logger log = LoggerFactory.getLogger(FederatedUserMgtDAO.class);
 
+    private static final String AUTHZ_USER = "AUTHZ_USER";
+    private static final String VARCHAR_TYPE = "VARCHAR";
     private DataSource dataSource;
     private DataSourceConfig dataSourceConfig;
 
@@ -62,19 +65,59 @@ public class FederatedUserMgtDAO {
         federatedUsers.addAll(getUsersWithActiveTokens());
         federatedUsers.addAll(getUsersWithActiveCodes());
 
-        return federatedUsers;
+        return federatedUsers.stream().distinct().collect(Collectors.toList());
+    }
+
+    public void revokeTokensAndCodes(List<String> federatedUsers) throws SQLModuleException {
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                .REVOKE_FEDERATED_USER_TOKENS_QUERY)) {
+            prepStmt.setArray(1, connection.createArrayOf(VARCHAR_TYPE, federatedUsers.toArray()));
+            prepStmt.executeQuery();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .REVOKE_FEDERATED_USER_CODES_QUERY)) {
+            prepStmt.setArray(1, connection.createArrayOf(VARCHAR_TYPE, federatedUsers.toArray()));
+            prepStmt.executeQuery();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+    }
+
+    public void migrateFederatedUsers() throws SQLModuleException {
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .MIGRATE_TOKEN_QUERY)) {
+            prepStmt.executeQuery();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .MIGRATE_AUTHORIZATION_CODE_QUERY)) {
+            prepStmt.executeQuery();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
     }
 
     private List<String> getUsersWithActiveTokens() throws SQLModuleException {
 
         List<String> federatedUsers = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants.ACTIVE_FEDERATED_USER_QUERY);
+            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                    .ACTIVE_FEDERATED_USERS_WITH_TOKEN_QUERY);
             ResultSet resultSet = prepStmt.executeQuery();
             if (resultSet.next()) {
-                System.out.println(resultSet.getString(1));
+                federatedUsers.add(resultSet.getString(AUTHZ_USER));
             }
-
         } catch (SQLException e) {
             throw new SQLModuleException(e);
         }
@@ -85,21 +128,15 @@ public class FederatedUserMgtDAO {
 
         List<String> federatedUsers = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants.ACTIVE_FEDERATED_USER_QUERY);
+            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                    .ACTIVE_FEDERATED_USERS_WITH_CODE_QUERY);
             ResultSet resultSet = prepStmt.executeQuery();
             if (resultSet.next()) {
-                System.out.println(resultSet.getString(1));
+                federatedUsers.add(resultSet.getString(AUTHZ_USER));
             }
-
         } catch (SQLException e) {
             throw new SQLModuleException(e);
         }
         return federatedUsers;
-    }
-
-    public void revokeTokens(List<String> federatedUsersFromLogs) {
-    }
-
-    public void appendIDP(List difference) {
     }
 }

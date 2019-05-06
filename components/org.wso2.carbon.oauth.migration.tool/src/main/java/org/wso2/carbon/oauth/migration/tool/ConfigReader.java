@@ -28,6 +28,7 @@ import org.wso2.carbon.oauth.migration.common.util.CommonConstants;
 import org.wso2.carbon.oauth.migration.config.ConfigConstants;
 import org.wso2.carbon.oauth.migration.config.SystemConfig;
 import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
+import org.wso2.carbon.oauth.migration.log.scanner.factory.LogScannerFactory;
 import org.wso2.carbon.oauth.migration.log.scanner.impl.BasicLogScanner;
 import org.wso2.carbon.oauth.migration.runtime.OAuthMigrationExecutionException;
 import org.wso2.carbon.oauth.migration.runtime.ScannerConfigImpl;
@@ -39,6 +40,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,14 +79,10 @@ public class ConfigReader {
         JSONParser jsonParser = new JSONParser();
 
         try {
+            log.info("Initializing configuration file parser");
             Object parsedObject = jsonParser.parse(new FileReader(file));
             if (parsedObject instanceof JSONObject) {
                 JSONObject jsonObject = (JSONObject) parsedObject;
-
-                Object processors = jsonObject.get(ConfigConstants.CONFIG_ELEMENT_PROCESSOR);
-                if (processors instanceof JSONObject) {
-                    loadProcessors((JSONObject) processors, systemConfig);
-                }
 
                 Object dataSource = jsonObject.get(ConfigConstants.DATASOURCE);
                 if (dataSource instanceof JSONObject) {
@@ -106,36 +104,29 @@ public class ConfigReader {
         return systemConfig;
     }
 
-    private void loadLogConfiguration(JSONObject logConfig, SystemConfig systemConfig) {
+    private void loadLogConfiguration(JSONObject logConfig, SystemConfig systemConfig)
+            throws OAuthMigrationExecutionException {
 
-        Object processor = logConfig.get(ConfigConstants.CONFIG_ELEMENT_PROCESSOR);
+        Object scanner = logConfig.get(ConfigConstants.CONFIG_ELEMENT_SCANNER);
         Object path = logConfig.get(ConfigConstants.LOG_FILE_PATH);
         Object logRegEx = logConfig.get(ConfigConstants.LOG_FILE_NAME_REGEX);
         Object logStatementRegEx = logConfig.get(ConfigConstants.LOG_STATEMENT_PATTERN);
-        if (processor instanceof String && path instanceof String && logRegEx instanceof String
+        if (scanner instanceof String && path instanceof String && logRegEx instanceof String
                 && logStatementRegEx instanceof String) {
-            String processorName = (String) processor;
-            if (systemConfig.getProcessor().equalsIgnoreCase(processorName)) {
-                ScannerConfig config = new ScannerConfigImpl();
-                config.setLogFilePath((String)path);
-                config.setLogFileRegEx((String) logRegEx);
-                config.setLogStatementPattern((String) logStatementRegEx);
-                LogScanner logScanner = logScannerMap.get(processor);
-                logScanner.setScannerConfig(config);
-                systemConfig.addLogScanner(logScanner);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("The processor : {} is not enabled", processor);
-                }
+            LogScanner logScanner = LogScannerFactory.getScanner((String) scanner);
+            ScannerConfig config = new ScannerConfigImpl();
+            config.setLogFilePath((String)path);
+            config.setLogFileRegEx((String) logRegEx);
+            config.setLogStatementPattern((String) logStatementRegEx);
+            logScanner.setScannerConfig(config);
+            systemConfig.addLogScanner(logScanner);
+            if (log.isDebugEnabled()) {
+                log.debug(MessageFormat.format("Setting log file directory : {0}", path));
+                log.debug(MessageFormat.format("Setting log file name pattern : {0}", logRegEx));
+                log.debug(MessageFormat.format("Setting log statement pattern : {0}", logStatementRegEx));
             }
-        }
-    }
-
-    private void loadProcessors(JSONObject processor, SystemConfig systemConfig) {
-
-        Object processorType = processor.get(ConfigConstants.PROCESSOR_TYPE);
-        if (processorType instanceof String) {
-            systemConfig.addProcessor((String) processorType);
+        } else {
+            throw new OAuthMigrationExecutionException("Invalid configuration data format");
         }
     }
 
@@ -147,11 +138,17 @@ public class ConfigReader {
         if (datasourcePath instanceof String && datasourceName instanceof String) {
             Path path = Paths.get((String) datasourcePath);
             DataSourceConfig.getInstance().setDatasourceName((String) datasourceName);
+            if (log.isDebugEnabled()) {
+                log.debug(MessageFormat.format("Setting datasource directory path : {0}", datasourcePath));
+                log.debug(MessageFormat.format("Setting datasource name : {0}", datasourceName));
+            }
             try {
                 DataSourceConfig.getInstance().readProcessorConfig(path);
             } catch (SQLModuleException e) {
                 throw new OAuthMigrationExecutionException(e.getMessage());
             }
+        } else {
+            throw new OAuthMigrationExecutionException("Invalid configuration data format");
         }
     }
 }

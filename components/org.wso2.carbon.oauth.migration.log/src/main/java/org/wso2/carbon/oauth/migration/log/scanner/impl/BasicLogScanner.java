@@ -37,31 +37,19 @@ import java.util.concurrent.Future;
 
 public class BasicLogScanner implements LogScanner {
 
-    private String logDirectoryPath;
     private ScannerConfig scannerConfig;
 
     @Override
     public List<String> processAuditLogs() {
 
-        return MigrationUtil.filterLogEntryList(crawlDirectoryAndProcessFiles(new File(logDirectoryPath)));
-    }
-
-    @Override
-    public void setLogDirectoryPath(String logDirectoryPath) {
-
-        this.logDirectoryPath = logDirectoryPath;
+        return MigrationUtil.filterLogEntryList(crawlDirectoryAndProcessFiles
+                (new File(scannerConfig.getLogFilePath())));
     }
 
     @Override
     public void setScannerConfig(ScannerConfig scannerConfig) {
 
         this.scannerConfig = scannerConfig;
-    }
-
-    @Override
-    public String getLogDirectoryPath() {
-
-        return logDirectoryPath;
     }
 
     private List<LogEntry> crawlDirectoryAndProcessFiles(File directory) {

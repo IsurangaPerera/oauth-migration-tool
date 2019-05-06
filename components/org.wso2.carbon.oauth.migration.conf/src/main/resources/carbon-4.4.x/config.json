@@ -1,11 +1,8 @@
 {
-  "processor" : {
-    "type": "basic-log-scanner"
-  },
   "log-config": {
-    "processor" : "basic-log-scanner",
-    "log-file-path" : "logs",
-    "log-file-name-regex" : "audit.log",
+    "scanner" : "basic-log-scanner",
+    "log-file-path" : "/Users/phoenix/wso2/product-is/modules/distribution/target/wso2is-5.8.0-beta3/repository/logs",
+    "log-file-name-regex" : "audit.log.*",
     "log-statement-pattern" : "((\"?[\\w]+\"?)\\s:\\s(\"?[\\w]+(@\\w+.\\w+)?=?\"?))"
   },
   "datasource" : {

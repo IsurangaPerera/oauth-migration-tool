@@ -25,4 +25,5 @@ public class CommonConstants {
     public static final String AUTHENTICATED_USER = "AuthenticatedUser";
     public static final String LOGIN_ACTION = "Action : LoginStepSuccess";
     public static final String BASIC_LOG_SCANNER = "basic-log-scanner";
+    public static final String OS_BASED_LOG_SCANNER = "os-based-log-scanner";
 }

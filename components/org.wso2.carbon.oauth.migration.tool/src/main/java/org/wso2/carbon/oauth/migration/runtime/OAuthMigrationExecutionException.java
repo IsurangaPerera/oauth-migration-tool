@@ -18,9 +18,6 @@
 
 package org.wso2.carbon.oauth.migration.runtime;
 
-/**
- * ForgetMe execution exception.
- */
 public class OAuthMigrationExecutionException extends Exception {
 
     private String errorCode;
