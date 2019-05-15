@@ -15,7 +15,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.oauth.migration.tool;
 
 import org.apache.commons.cli.CommandLine;
@@ -26,6 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oauth.migration.config.SystemConfig;
 import org.wso2.carbon.oauth.migration.runtime.OAuthMigrationExecutionException;
+import org.wso2.carbon.oauth.migration.tool.impl.OAuthMigrationExecutor;
+import org.wso2.carbon.oauth.migration.tool.impl.OAuthMigrationWithFilteringExecutor;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,12 +43,13 @@ public class OAuthTokenMigrator {
 
     private static final Logger log = LoggerFactory.getLogger(OAuthTokenMigrator.class);
 
+    private static Executor executor;
+
+    private static final String CMD_OPTION_ENABLE_LOG_SCANNER = "es";
     private static final String CMD_OPTION_CONFIG_DIR = "d";
-    private static final String CMD_OPTION_CONFIG_CARBON_HOME = "carbon";
     private static final String CMD_OPTION_HELP = "help";
     private static final String CONFIG_FILE_NAME = "config.json";
     private static final String CONF_DIRECTORY = "/conf";
-    private static final String CARBON_HOME = "CARBON_HOME";
 
     public static void main(String[] args) throws Exception {
 
@@ -56,9 +58,11 @@ public class OAuthTokenMigrator {
 
         Options options = new Options();
 
-        options.addOption(CMD_OPTION_CONFIG_DIR, true, "Directory where config.json file located (mandatory)");
+        options.addOption(CMD_OPTION_CONFIG_DIR, true, "Directory where config.json file " +
+                "located (mandatory)");
         options.addOption(CMD_OPTION_HELP, false, "Help");
-        options.addOption(CMD_OPTION_CONFIG_CARBON_HOME, true, "Carbon Home (optional)");
+        options.addOption(CMD_OPTION_ENABLE_LOG_SCANNER, false, "Enable log scanning to filter " +
+                "affected users");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -66,6 +70,12 @@ public class OAuthTokenMigrator {
         if (cmd.hasOption(CMD_OPTION_HELP)) {
             emitHelp(System.out);
             return;
+        }
+
+        if (cmd.hasOption(CMD_OPTION_ENABLE_LOG_SCANNER)) {
+            executor = new OAuthMigrationWithFilteringExecutor();
+        } else {
+            executor = new OAuthMigrationExecutor();
         }
 
         String homeDir;
@@ -87,10 +97,12 @@ public class OAuthTokenMigrator {
             File home = new File(homeDir).getAbsoluteFile().getCanonicalFile();
             SystemConfig systemConfig = configReader.readSystemConfig(new File(home, CONFIG_FILE_NAME));
             systemConfig.setWorkDir(home.toPath());
-            OAuthMigrationExecutor executor = new OAuthMigrationExecutor(systemConfig);
+
+            executor.setSystemConfig(systemConfig);
             executor.execute();
         } catch (IOException e) {
-            throw new OAuthMigrationExecutionException("Could not load config from directory: " + homeDir, e, "E_INIT", null);
+            throw new OAuthMigrationExecutionException("Could not load config from directory: " + homeDir, e,
+                    "E_INIT", null);
         }
     }
 

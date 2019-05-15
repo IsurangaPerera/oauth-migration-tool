@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.oauth.migration.sql.dao;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oauth.migration.common.runtime.ModuleException;
@@ -29,6 +30,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +45,6 @@ public class FederatedUserMgtDAO {
     private static final Logger log = LoggerFactory.getLogger(FederatedUserMgtDAO.class);
 
     private static final String AUTHZ_USER = "AUTHZ_USER";
-    private static final String VARCHAR_TYPE = "VARCHAR";
     private DataSource dataSource;
     private DataSourceConfig dataSourceConfig;
 
@@ -68,21 +74,48 @@ public class FederatedUserMgtDAO {
         return federatedUsers.stream().distinct().collect(Collectors.toList());
     }
 
-    public void revokeTokensAndCodes(List<String> federatedUsers) throws SQLModuleException {
+    public void revokeAllTokens() throws SQLModuleException {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
-                .REVOKE_FEDERATED_USER_TOKENS_QUERY)) {
-            prepStmt.setArray(1, connection.createArrayOf(VARCHAR_TYPE, federatedUsers.toArray()));
-            prepStmt.executeQuery();
+                     .REVOKE_ALL_FEDERATED_USER_TOKENS_QUERY)) {
+            prepStmt.executeUpdate();
+        } catch (SQLException e) {
+            log.error("",e);
+            throw new SQLModuleException(e);
+        }
+    }
+
+    public void revokeAllAuthorizationCodes() throws SQLModuleException {
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .REVOKE_ALL_FEDERATED_USER_CODES_QUERY)) {
+            prepStmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+    }
+
+    public void revokeTokensAndCodes(List<String> federatedUsers) throws SQLModuleException {
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(processQueryContainingList
+                     (federatedUsers.size(), DAOConstants.REVOKE_FEDERATED_USER_TOKENS_QUERY, "#"))) {
+            for(int i = 1; i <= federatedUsers.size(); ++i) {
+                prepStmt.setString(i, federatedUsers.get(i-1));
+            }
+            prepStmt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLModuleException(e);
         }
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
-                     .REVOKE_FEDERATED_USER_CODES_QUERY)) {
-            prepStmt.setArray(1, connection.createArrayOf(VARCHAR_TYPE, federatedUsers.toArray()));
+             PreparedStatement prepStmt = connection.prepareStatement(processQueryContainingList
+                     (federatedUsers.size(), DAOConstants.REVOKE_FEDERATED_USER_CODES_QUERY, "#"))) {
+            for(int i = 1; i <= federatedUsers.size(); ++i) {
+                prepStmt.setString(i, federatedUsers.get(i-1));
+            }
             prepStmt.executeQuery();
         } catch (SQLException e) {
             throw new SQLModuleException(e);
@@ -94,7 +127,7 @@ public class FederatedUserMgtDAO {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
                      .MIGRATE_TOKEN_QUERY)) {
-            prepStmt.executeQuery();
+            prepStmt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLModuleException(e);
         }
@@ -102,10 +135,37 @@ public class FederatedUserMgtDAO {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
                      .MIGRATE_AUTHORIZATION_CODE_QUERY)) {
-            prepStmt.executeQuery();
+            prepStmt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLModuleException(e);
         }
+    }
+
+    public List<Long> getTokenExpirationTime() throws SQLModuleException {
+
+        List<Long> tokenExpirationTimeList = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                    .TOKEN_EXPIRATION_TIME_QUERY);
+            ResultSet resultSet = prepStmt.executeQuery();
+            while(resultSet.next()) {
+                Timestamp createdTime = resultSet.getTimestamp(DAOConstants.TIME_CREATED);
+                ZonedDateTime utcDateTime = ZonedDateTime.ofInstant(createdTime.toInstant(), ZoneId.of("UTC"));
+                LocalDateTime localDateTime = utcDateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+
+
+                long validityPeriod = resultSet.getLong(DAOConstants.VALIDITY_PERIOD);
+                LocalDateTime expirationTime = localDateTime.plusSeconds(validityPeriod/1000);
+
+                if(expirationTime.isAfter(LocalDateTime.now(ZoneOffset.UTC))) {
+                    tokenExpirationTimeList.add(LocalDateTime.now(ZoneOffset.UTC).until(expirationTime,
+                            ChronoUnit.DAYS));
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+        return tokenExpirationTimeList;
     }
 
     private List<String> getUsersWithActiveTokens() throws SQLModuleException {
@@ -138,5 +198,49 @@ public class FederatedUserMgtDAO {
             throw new SQLModuleException(e);
         }
         return federatedUsers;
+    }
+
+    //TODO
+    public Timestamp getFirstIssuedTime() throws SQLModuleException {
+
+        Timestamp timestampToken = getFirstTokenIssuedTime();
+        Timestamp timestampCode = getFirstCodeIssuedTime();
+        if (timestampCode.after(timestampToken)) {
+            return timestampToken;
+        }
+        return null;
+    }
+
+    private Timestamp getFirstTokenIssuedTime() throws SQLModuleException {
+
+        Timestamp timestamp;
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                    .FIRST_ACTIVE_TOKEN_ISSUED_TIME_QUERY);
+            ResultSet resultSet = prepStmt.executeQuery();
+            timestamp = resultSet.getTimestamp(1);
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+        return timestamp;
+    }
+
+    private Timestamp getFirstCodeIssuedTime() throws SQLModuleException {
+
+        Timestamp timestamp;
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                    .FIRST_ACTIVE_CODE_ISSUED_TIME_QUERY);
+            ResultSet resultSet = prepStmt.executeQuery();
+            timestamp = resultSet.getTimestamp(1);
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+        return timestamp;
+    }
+
+    private String processQueryContainingList(int numOfParams, String query, String placeHolder) {
+
+        return query.replace(placeHolder, StringUtils.repeat("?", ",", numOfParams));
     }
 }

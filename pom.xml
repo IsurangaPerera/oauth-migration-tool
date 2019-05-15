@@ -51,7 +51,6 @@
     </scm>
 
     <modules>
-
         <module>components/org.wso2.carbon.oauth.migration.common</module>
         <module>components/org.wso2.carbon.oauth.migration.log</module>
         <module>components/org.wso2.carbon.oauth.migration.sql</module>
@@ -272,6 +271,11 @@
                 <artifactId>commons-codec</artifactId>
                 <version>${commons-codec.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.diogonunes</groupId>
+                <artifactId>JCDP</artifactId>
+                <version>${jcdp.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -322,6 +326,8 @@
         <swagger-jaxrs.version>1.5.20</swagger-jaxrs.version>
         <com.fasterxml.jackson.version>2.9.6</com.fasterxml.jackson.version>
         <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
+
+        <jcdp.version>2.0.3.1</jcdp.version>
     </properties>
 
 

@@ -1,0 +1,19 @@
+Tokens expire in less than one day   : {0}
+Tokens expire in less than two days  : {1}
+Tokens expire in less than one week  : {2}
+Tokens expire in less than one month : {3}
+Tokens expire in less than one year  : {4}
+Tokens expire after one year         : {5}
+
+
+It seems that you are currently affected by this temporary vulnerability.You will be completely
+safe from the vulnerability after {6} days. However, we recommend that you revoke all affected
+tokens issued to federated users in order to ensure maximum security.
+
+[1] Revoke all affected tokens
+
+[2] Revoke all affected authorization codes
+
+[3] Revoke all affected authorization codes & access tokens
+
+[4] Continue without further actions

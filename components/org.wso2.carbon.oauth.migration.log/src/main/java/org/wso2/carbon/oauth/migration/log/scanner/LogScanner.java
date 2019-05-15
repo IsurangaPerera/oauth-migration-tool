@@ -17,16 +17,18 @@
  *
  *
  */
-
 package org.wso2.carbon.oauth.migration.log.scanner;
 
 import org.wso2.carbon.oauth.migration.common.runtime.ScannerConfig;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface LogScanner {
 
     List<String> processAuditLogs();
+
+    List<String> processAuditLogs(Timestamp timestamp);
 
     void setScannerConfig(ScannerConfig scannerConfig);
 }

@@ -1,0 +1,9 @@
+When two federated users with similar usernames try to get an access token or an authorization
+code in an environment where multiple federated IDPs are configured the token/code will be shared
+between both users based on which user creates the access token 1st.This issue has already been
+resolved in Identity Server 5.8.0.
+
+Even Though you are affected by this vulnerability, as active
+tokens/codes issued for federated users before the migration expires users will be completely
+safe from this vulnerability. However we recommend to use tool to revoke all affected tokens
+and authorization codes to ensure highest security.

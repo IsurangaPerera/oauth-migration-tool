@@ -27,6 +27,7 @@ import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
 import org.wso2.carbon.oauth.migration.log.processor.LogStatementProcessor;
 
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,8 +43,14 @@ public class BasicLogScanner implements LogScanner {
     @Override
     public List<String> processAuditLogs() {
 
+        return processAuditLogs(null);
+    }
+
+    @Override
+    public List<String> processAuditLogs(Timestamp timestamp) {
+
         return MigrationUtil.filterLogEntryList(crawlDirectoryAndProcessFiles
-                (new File(scannerConfig.getLogFilePath())));
+                (new File(scannerConfig.getLogFilePath()), timestamp));
     }
 
     @Override
@@ -52,7 +59,7 @@ public class BasicLogScanner implements LogScanner {
         this.scannerConfig = scannerConfig;
     }
 
-    private List<LogEntry> crawlDirectoryAndProcessFiles(File directory) {
+    private List<LogEntry> crawlDirectoryAndProcessFiles(File directory, Timestamp timestamp) {
 
         List<LogEntry> logEntryList = new ArrayList<>();
         ExecutorService executor = Executors.newFixedThreadPool(3);
@@ -60,7 +67,7 @@ public class BasicLogScanner implements LogScanner {
 
         for (File file : Objects.requireNonNull(directory.listFiles())) {
             if (file.isDirectory()) {
-                crawlDirectoryAndProcessFiles(file);
+                crawlDirectoryAndProcessFiles(file, timestamp);
             } else {
                 calls.add(new LogStatementProcessor(file));
             }

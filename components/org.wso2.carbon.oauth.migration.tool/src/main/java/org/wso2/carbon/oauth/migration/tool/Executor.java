@@ -15,34 +15,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.wso2.carbon.oauth.migration.tool;
 
-package org.wso2.carbon.oauth.migration.config;
+import org.wso2.carbon.oauth.migration.config.SystemConfig;
+import org.wso2.carbon.oauth.migration.runtime.OAuthMigrationExecutionException;
 
-import org.wso2.carbon.oauth.migration.log.scanner.LogScanner;
+public interface Executor {
 
-import java.nio.file.Path;
-
-/**
- * Represents System Configuration.
- *
- */
-public class SystemConfig {
-
-    private Path workDir;
-    private LogScanner logScanner;
-
-    public void addLogScanner(LogScanner logScanner) {
-
-        this.logScanner = logScanner;
-    }
-
-    public LogScanner getLogScanner() {
-
-        return logScanner;
-    }
-
-    public void setWorkDir(Path workDir) {
-
-        this.workDir = workDir;
-    }
+    void setSystemConfig(SystemConfig systemConfig);
+    void execute() throws OAuthMigrationExecutionException;
 }
