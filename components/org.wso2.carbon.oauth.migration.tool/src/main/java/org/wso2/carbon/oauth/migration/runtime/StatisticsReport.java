@@ -17,7 +17,6 @@
  */
 package org.wso2.carbon.oauth.migration.runtime;
 
-import com.jakewharton.fliptables.FlipTable;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,7 @@ public class StatisticsReport {
         String vulnerabilityStatus = "Vulnerability Status : Negative";
         List<Long> tokenExpirationTime;
         boolean isVulnerable = false;
-        String[][] data;
+        String data;
 
         try {
             FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
@@ -60,17 +59,18 @@ public class StatisticsReport {
             isVulnerable = true;
         }
 
-        String[] headers = { vulnerabilityStatus };
+        String headers = vulnerabilityStatus;
         if (isVulnerable) {
             Long[] partitionedData = partitionDataset(tokenExpirationTime);
-            data = new String[][]{{MessageFormat.format(readReportDescription(), partitionedData[0], partitionedData[1],
+            data = MessageFormat.format(readReportDescription(), partitionedData[0], partitionedData[1],
                     partitionedData[2], partitionedData[3], partitionedData[4], partitionedData[5], Collections
-                            .max(tokenExpirationTime))}};
+                            .max(tokenExpirationTime));
         } else {
-            data = new String[][]{{"System is not affected by the vulnerability. No further actions required."}};
+            data = "System is not affected by the vulnerability. No further actions required.";
         }
 
-        System.out.println(FlipTable.of(headers, data));
+        System.out.println(headers);
+        System.out.println(data);
 
         return isVulnerable;
     }

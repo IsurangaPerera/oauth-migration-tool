@@ -17,12 +17,13 @@
  */
 package org.wso2.carbon.oauth.migration.tool.impl;
 
-import com.jakewharton.fliptables.FlipTable;
 import org.apache.commons.io.IOUtils;
 import org.beryx.textio.TextIO;
 import org.beryx.textio.TextIoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.oauth.migration.common.logger.OAuthMigrationLogger;
+import org.wso2.carbon.oauth.migration.common.util.CommonConstants;
 import org.wso2.carbon.oauth.migration.config.SystemConfig;
 import org.wso2.carbon.oauth.migration.runtime.OAuthMigrationExecutionException;
 import org.wso2.carbon.oauth.migration.runtime.StatisticsReport;
@@ -64,11 +65,8 @@ public class OAuthMigrationExecutor implements Executor {
         TextIO textIO = TextIoFactory.getTextIO();
         ansi().eraseScreen();
 
-        String[] headers = { readIssueDescription() };
-        String[][] data = {
-                { "\n[1] Scan for the vulnerability\n\n[2] Continue without scanning\n" }
-        };
-        System.out.println(FlipTable.of(headers, data));
+        String data = readIssueDescription();
+        System.out.println(data);
 
         int option = textIO.newIntInputReader().read("Please select your preference");
 
@@ -102,7 +100,8 @@ public class OAuthMigrationExecutor implements Executor {
             if (option == 1) {
                 try {
                     FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
-                    federatedUserMgtDAO.revokeAllTokens();
+                    OAuthMigrationLogger.writeToAuditLog(federatedUserMgtDAO.revokeAllTokens(), CommonConstants
+                            .AUDIT_LOG_TYPE_TOKEN);
                     if (log.isDebugEnabled()) {
                         log.debug("Revoked all access tokens issued to affected federated users");
                     }
@@ -112,7 +111,8 @@ public class OAuthMigrationExecutor implements Executor {
             } else if(option == 2) {
                 try {
                     FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
-                    federatedUserMgtDAO.revokeAllAuthorizationCodes();
+                    OAuthMigrationLogger.writeToAuditLog(federatedUserMgtDAO.revokeAllAuthorizationCodes(),
+                            CommonConstants.AUDIT_LOG_TYPE_CODE);
                     if (log.isDebugEnabled()) {
                         log.debug("Revoked all authorization codes issued to affected federated users");
                     }
@@ -123,8 +123,10 @@ public class OAuthMigrationExecutor implements Executor {
             } else if(option == 3) {
                 try {
                     FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
-                    federatedUserMgtDAO.revokeAllTokens();
-                    federatedUserMgtDAO.revokeAllAuthorizationCodes();
+                    OAuthMigrationLogger.writeToAuditLog(federatedUserMgtDAO.revokeAllTokens(), CommonConstants
+                            .AUDIT_LOG_TYPE_TOKEN);
+                    OAuthMigrationLogger.writeToAuditLog(federatedUserMgtDAO.revokeAllAuthorizationCodes(),
+                            CommonConstants.AUDIT_LOG_TYPE_CODE);
                     if (log.isDebugEnabled()) {
                         log.debug("Revoked all access tokens & authorization codes issued to affected federated users");
                     }

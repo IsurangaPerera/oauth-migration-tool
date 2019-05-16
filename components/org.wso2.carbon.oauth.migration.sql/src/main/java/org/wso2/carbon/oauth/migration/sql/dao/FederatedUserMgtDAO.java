@@ -45,6 +45,8 @@ public class FederatedUserMgtDAO {
     private static final Logger log = LoggerFactory.getLogger(FederatedUserMgtDAO.class);
 
     private static final String AUTHZ_USER = "AUTHZ_USER";
+    private static final String TOKEN_ID = "TOKEN_ID";
+    private static final String CODE_ID = "CODE_ID";
     private DataSource dataSource;
     private DataSourceConfig dataSourceConfig;
 
@@ -74,19 +76,46 @@ public class FederatedUserMgtDAO {
         return federatedUsers.stream().distinct().collect(Collectors.toList());
     }
 
-    public void revokeAllTokens() throws SQLModuleException {
+    public List<String[]> revokeAllTokens() throws SQLModuleException {
+
+        List<String[]> revokedTokens = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                    .ACTIVE_FEDERATED_USER_ENTRY_TOKEN_QUERY);
+            ResultSet resultSet = prepStmt.executeQuery()) {
+            while (resultSet.next()) {
+                String[] entry = {resultSet.getString(TOKEN_ID), resultSet.getString(AUTHZ_USER)};
+                revokedTokens.add(entry);
+            }
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
                      .REVOKE_ALL_FEDERATED_USER_TOKENS_QUERY)) {
             prepStmt.executeUpdate();
         } catch (SQLException e) {
-            log.error("",e);
             throw new SQLModuleException(e);
         }
+
+        return revokedTokens;
     }
 
-    public void revokeAllAuthorizationCodes() throws SQLModuleException {
+    public List<String[]> revokeAllAuthorizationCodes() throws SQLModuleException {
+
+        List<String[]> revokedCodes = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .ACTIVE_FEDERATED_USER_ENTRY_CODE_QUERY);
+             ResultSet resultSet = prepStmt.executeQuery()) {
+            while (resultSet.next()) {
+                String[] entry = {resultSet.getString(CODE_ID), resultSet.getString(AUTHZ_USER)};
+                revokedCodes.add(entry);
+            }
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
@@ -95,6 +124,8 @@ public class FederatedUserMgtDAO {
         } catch (SQLException e) {
             throw new SQLModuleException(e);
         }
+
+        return revokedCodes;
     }
 
     public void revokeTokensAndCodes(List<String> federatedUsers) throws SQLModuleException {
