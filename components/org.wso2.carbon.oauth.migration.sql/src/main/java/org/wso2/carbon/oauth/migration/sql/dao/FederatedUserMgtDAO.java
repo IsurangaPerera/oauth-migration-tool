@@ -15,7 +15,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.wso2.carbon.oauth.migration.sql.dao;
 
 import org.apache.commons.lang.StringUtils;
@@ -203,14 +202,62 @@ public class FederatedUserMgtDAO {
         return tokenExpirationTimeList;
     }
 
-    public List<String[]> revokeAllTokensAfter(String date) {
+    public List<String[]> revokeAllTokensAfter(String date) throws SQLModuleException {
 
-        return new ArrayList<>();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        List<String[]> revokedTokens = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .ACTIVE_FEDERATED_USER_CREATED_AFTER_TOKEN_QUERY)) {
+            Date d = dateFormat.parse(date);
+            prepStmt.setTimestamp(1, new Timestamp(d.getTime()));
+            ResultSet resultSet = prepStmt.executeQuery();
+            while (resultSet.next()) {
+                String[] entry = {resultSet.getString(TOKEN_ID), resultSet.getString(AUTHZ_USER)};
+                revokedTokens.add(entry);
+            }
+        } catch (SQLException | ParseException e) {
+            throw new SQLModuleException(e);
+        }
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .REVOKE_ALL_FEDERATED_USER_TOKENS_AFTER_QUERY)) {
+            prepStmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+
+        return revokedTokens;
     }
 
     public List<String[]> revokeAllAuthorizationCodesAfter(String date) throws SQLModuleException {
 
-        return new ArrayList<>();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        List<String[]> revokedCodes = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .ACTIVE_FEDERATED_USER_CREATED_AFTER_CODE_QUERY)) {
+            Date d = dateFormat.parse(date);
+            prepStmt.setTimestamp(1, new Timestamp(d.getTime()));
+            ResultSet resultSet = prepStmt.executeQuery();
+            while (resultSet.next()) {
+                String[] entry = {resultSet.getString(CODE_ID), resultSet.getString(AUTHZ_USER)};
+                revokedCodes.add(entry);
+            }
+        } catch (SQLException | ParseException e) {
+            throw new SQLModuleException(e);
+        }
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement prepStmt = connection.prepareStatement(DAOConstants
+                     .REVOKE_ALL_FEDERATED_USER_CODES_AFTER_QUERY)) {
+            prepStmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLModuleException(e);
+        }
+
+        return revokedCodes;
     }
 
     private List<String> getUsersWithActiveTokens() throws SQLModuleException {
