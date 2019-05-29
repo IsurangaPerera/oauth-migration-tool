@@ -26,7 +26,6 @@ public class CommonConstants {
     public static final String LOGIN_ACTION = "Action : LoginStepSuccess";
     public static final String BASIC_LOG_SCANNER = "basic-log-scanner";
     public static final String OS_BASED_LOG_SCANNER = "os-based-log-scanner";
-    public static final String AUDIT_LOG_TYPE = "type";
     public static final String AUDIT_LOG_TYPE_TOKEN = "access token";
     public static final String AUDIT_LOG_TYPE_CODE = "authorization code";
 }

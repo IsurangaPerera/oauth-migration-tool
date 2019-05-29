@@ -56,7 +56,7 @@
         <fileSet>
             <directory>target/dist</directory>
             <outputDirectory>oauth-migration-tool-${pom.version}</outputDirectory>
-            <fileMode>644</fileMode>
+            <fileMode>777</fileMode>
         </fileSet>
     </fileSets>
 </assembly>

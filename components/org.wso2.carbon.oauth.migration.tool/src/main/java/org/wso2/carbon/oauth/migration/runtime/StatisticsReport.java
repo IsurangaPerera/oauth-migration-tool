@@ -32,13 +32,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static org.fusesource.jansi.Ansi.Color.GREEN;
+import static org.fusesource.jansi.Ansi.Color.YELLOW;
+import static org.fusesource.jansi.Ansi.ansi;
+
 public class StatisticsReport {
 
     private static final Logger log = LoggerFactory.getLogger(StatisticsReport.class);
 
     public boolean generate() throws OAuthMigrationExecutionException {
 
-        String vulnerabilityStatus = "Vulnerability Status : Negative";
         List<Long> tokenExpirationTime;
         boolean isVulnerable = false;
         String data;
@@ -55,22 +58,19 @@ public class StatisticsReport {
                 log.debug(MessageFormat.format("Fetched {0} active token(s) that belong to federated users",
                         tokenExpirationTime.size()));
             }
-            vulnerabilityStatus = "Vulnerability Status : Positive";
             isVulnerable = true;
+        } else {
+            System.out.println( ansi().fg(GREEN).a("You are not affected by this vulnerability.").reset() );
         }
 
-        String headers = vulnerabilityStatus;
         if (isVulnerable) {
             Long[] partitionedData = partitionDataset(tokenExpirationTime);
             data = MessageFormat.format(readReportDescription(), partitionedData[0], partitionedData[1],
                     partitionedData[2], partitionedData[3], partitionedData[4], partitionedData[5], Collections
                             .max(tokenExpirationTime));
-        } else {
-            data = "System is not affected by the vulnerability. No further actions required.";
-        }
 
-        System.out.println(headers);
-        System.out.println(data);
+            System.out.println(ansi().fg(YELLOW).a(data).reset());
+        }
 
         return isVulnerable;
     }

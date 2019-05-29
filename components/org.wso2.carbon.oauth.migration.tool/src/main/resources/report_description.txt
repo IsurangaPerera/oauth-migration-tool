@@ -7,15 +7,10 @@ Tokens expire in less than one month : {3}
 Tokens expire in less than one year  : {4}
 Tokens expire after one year         : {5}
 
-It seems that you are currently affected by this temporary vulnerability.You will be completely
-safe from the vulnerability after {6} days. However, we recommend that you revoke all affected
-tokens issued to federated users in order to ensure maximum security.
+Scan results suggest that you might be affected by this temporary vulnerability.
+However, we have already taken the necessary precautions to ensure that you are no longer
+affected by it. Furthermore, you may use this tool to clean those possibly affected federated users.
+We are happy to announce that Identity Server version 5.8.0 and above will be no longer
+affected by this temporary vulnerability.
 
-Press '1' to revoke all affected access tokens
-
-Press '2' to revoke all affected authorization codes
-
-Press '3' to revoke all affected authorization codes & access tokens
-
-Press '4' to continue without further actions
 

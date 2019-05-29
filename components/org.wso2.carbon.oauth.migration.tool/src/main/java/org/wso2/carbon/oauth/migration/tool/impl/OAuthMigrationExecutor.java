@@ -20,6 +20,7 @@ package org.wso2.carbon.oauth.migration.tool.impl;
 import org.apache.commons.io.IOUtils;
 import org.beryx.textio.TextIO;
 import org.beryx.textio.TextIoFactory;
+import org.fusesource.jansi.Ansi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.oauth.migration.common.logger.OAuthMigrationLogger;
@@ -27,6 +28,7 @@ import org.wso2.carbon.oauth.migration.common.util.CommonConstants;
 import org.wso2.carbon.oauth.migration.config.SystemConfig;
 import org.wso2.carbon.oauth.migration.runtime.OAuthMigrationExecutionException;
 import org.wso2.carbon.oauth.migration.runtime.StatisticsReport;
+import org.wso2.carbon.oauth.migration.sql.config.DataSourceConfig;
 import org.wso2.carbon.oauth.migration.sql.dao.FederatedUserMgtDAO;
 import org.wso2.carbon.oauth.migration.sql.exception.SQLModuleException;
 import org.wso2.carbon.oauth.migration.tool.Executor;
@@ -35,6 +37,7 @@ import org.wso2.carbon.oauth.migration.tool.OAuthTokenMigrator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Objects;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -70,9 +73,8 @@ public class OAuthMigrationExecutor implements Executor {
 
         int option = textIO.newIntInputReader().read("Please select your preference");
 
-        switch(option) {
-            case 1: initializeVulnerabilityScanner();
-            case 2: cancel();
+        if (option == 1) {
+            initializeVulnerabilityScanner();
         }
     }
 
@@ -91,12 +93,23 @@ public class OAuthMigrationExecutor implements Executor {
     private static void initializeVulnerabilityScanner() throws OAuthMigrationExecutionException {
 
         TextIO textIO = TextIoFactory.getTextIO();
-        System.out.println("\nInitializing vulnerability scanner....\n");
+        log.info(MessageFormat.format("Initializing vulnerability scanner @ {0}", DataSourceConfig
+                .getInstance().getDatasourceName()));
         StatisticsReport statisticsReport = new StatisticsReport();
         boolean isVulnerable = statisticsReport.generate();
 
         if (isVulnerable) {
+
+            System.out.println("Press '1' to continue with the tool\n");
+            System.out.println("Press '2' to continue without further actions\n");
+
             int option = textIO.newIntInputReader().read("Please select your preference");
+            if (option != 1) {
+                cancel();
+            } else {
+                printToolOptions();
+            }
+            option = textIO.newIntInputReader().read("Please select your preference");
             if (option == 1) {
                 try {
                     FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
@@ -138,8 +151,23 @@ public class OAuthMigrationExecutor implements Executor {
                 cancel();
             }
 
-            System.out.println("\nSuccessfully tokens/authorization code issued to affected federated users\n");
+            System.out.println(ansi().fg(Ansi.Color.YELLOW).a("\n\nSuccessfully revoked tokens/authorization codes" +
+                    " issued to affected federated users").reset());
         }
+    }
+
+    private static void printToolOptions() {
+
+        System.out.println(ansi().fg(Ansi.Color.GREEN).a("\nPlease select one of the following options to fix " +
+                "possibly affected federated users.").reset());
+
+        System.out.println("\n\nPress '1' to revoke all affected access tokens\n");
+
+        System.out.println("Press '2' to revoke all affected authorization codes\n");
+
+        System.out.println("Press '3' to revoke all affected authorization codes & access tokens\n");
+
+        System.out.println("Press '4' to continue without further actions\n");
     }
 
     private static void cancel() {

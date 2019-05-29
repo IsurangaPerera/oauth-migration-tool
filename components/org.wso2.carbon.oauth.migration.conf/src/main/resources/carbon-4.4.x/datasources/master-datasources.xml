@@ -26,7 +26,7 @@
             </jndiConfig>
             <definition type="RDBMS">
                 <configuration>
-                    <url>jdbc:db2://localhost:50000/test</url>
+                    <url>jdbc:db2://localhost:50000/carbon11</url>
                     <username>db2inst1</username>
                     <password>db2inst1</password>
                     <driverClassName>com.ibm.db2.jcc.DB2Driver</driverClassName>
