@@ -31,12 +31,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -199,6 +203,16 @@ public class FederatedUserMgtDAO {
         return tokenExpirationTimeList;
     }
 
+    public List<String[]> revokeAllTokensAfter(String date) {
+
+        return new ArrayList<>();
+    }
+
+    public List<String[]> revokeAllAuthorizationCodesAfter(String date) throws SQLModuleException {
+
+        return new ArrayList<>();
+    }
+
     private List<String> getUsersWithActiveTokens() throws SQLModuleException {
 
         List<String> federatedUsers = new ArrayList<>();
@@ -231,7 +245,6 @@ public class FederatedUserMgtDAO {
         return federatedUsers;
     }
 
-    //TODO
     public Timestamp getFirstIssuedTime() throws SQLModuleException {
 
         Timestamp timestampToken = getFirstTokenIssuedTime();

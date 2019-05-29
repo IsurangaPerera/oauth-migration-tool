@@ -17,7 +17,6 @@
  */
 package org.wso2.carbon.oauth.migration.tool.impl;
 
-import org.apache.commons.io.IOUtils;
 import org.beryx.textio.TextIO;
 import org.beryx.textio.TextIoFactory;
 import org.fusesource.jansi.Ansi;
@@ -32,13 +31,8 @@ import org.wso2.carbon.oauth.migration.sql.config.DataSourceConfig;
 import org.wso2.carbon.oauth.migration.sql.dao.FederatedUserMgtDAO;
 import org.wso2.carbon.oauth.migration.sql.exception.SQLModuleException;
 import org.wso2.carbon.oauth.migration.tool.Executor;
-import org.wso2.carbon.oauth.migration.tool.OAuthTokenMigrator;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Objects;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
@@ -59,35 +53,8 @@ public class OAuthMigrationExecutor implements Executor {
     @Override
     public void execute() throws OAuthMigrationExecutionException {
 
-        generateOptions();
+        initializeVulnerabilityScanner();
 
-    }
-
-    private static void generateOptions() throws OAuthMigrationExecutionException {
-
-        TextIO textIO = TextIoFactory.getTextIO();
-        ansi().eraseScreen();
-
-        String data = readIssueDescription();
-        System.out.println(data);
-
-        int option = textIO.newIntInputReader().read("Please select your preference");
-
-        if (option == 1) {
-            initializeVulnerabilityScanner();
-        }
-    }
-
-    private static String readIssueDescription() {
-
-        InputStream inputStream = OAuthTokenMigrator.class.getClassLoader().getResourceAsStream("issue_description.txt");
-        String issueDescription = null;
-        try {
-            issueDescription = IOUtils.toString(Objects.requireNonNull(inputStream), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            log.error("Issue description not found");
-        }
-        return issueDescription;
     }
 
     private static void initializeVulnerabilityScanner() throws OAuthMigrationExecutionException {
@@ -100,16 +67,13 @@ public class OAuthMigrationExecutor implements Executor {
 
         if (isVulnerable) {
 
-            System.out.println("Press '1' to continue with the tool\n");
-            System.out.println("Press '2' to continue without further actions\n");
-
-            int option = textIO.newIntInputReader().read("Please select your preference");
-            if (option != 1) {
-                cancel();
-            } else {
+            String choice = textIO.newStringInputReader().read("Do you want to take further actions?(yes/no)");
+            if (choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y")) {
                 printToolOptions();
+            } else {
+                cancel();
             }
-            option = textIO.newIntInputReader().read("Please select your preference");
+            int option = textIO.newIntInputReader().read("Please select your preference");
             if (option == 1) {
                 try {
                     FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
@@ -147,27 +111,42 @@ public class OAuthMigrationExecutor implements Executor {
                     throw new OAuthMigrationExecutionException("Could not revoke authorization codes and access" +
                             " tokens issued to affected users");
                 }
+            } else if(option == 4) {
+                String date = "2000-01-01";
+                try {
+                    date = textIO.newStringInputReader().read("Enter date in yyyy-mm-dd format");
+                    FederatedUserMgtDAO federatedUserMgtDAO = new FederatedUserMgtDAO();
+                    OAuthMigrationLogger.writeToAuditLog(federatedUserMgtDAO.revokeAllTokensAfter(date), CommonConstants
+                            .AUDIT_LOG_TYPE_TOKEN);
+                    OAuthMigrationLogger.writeToAuditLog(federatedUserMgtDAO.revokeAllAuthorizationCodesAfter(date),
+                            CommonConstants.AUDIT_LOG_TYPE_CODE);
+                    if (log.isDebugEnabled()) {
+                        log.debug(MessageFormat.format("Revoked all access tokens & authorization codes " +
+                                "issued after", date));
+                    }
+                } catch (SQLModuleException e) {
+                    throw new OAuthMigrationExecutionException(MessageFormat.format("Could not access " +
+                            "tokens & authorization codes issued after", date));
+                }
             } else {
                 cancel();
             }
 
-            System.out.println(ansi().fg(Ansi.Color.YELLOW).a("\n\nSuccessfully revoked tokens/authorization codes" +
+            System.out.println(ansi().fg(Ansi.Color.GREEN).a("\n\nSuccessfully revoked tokens/authorization codes" +
                     " issued to affected federated users").reset());
         }
     }
 
     private static void printToolOptions() {
 
-        System.out.println(ansi().fg(Ansi.Color.GREEN).a("\nPlease select one of the following options to fix " +
+        System.out.println(ansi().fg(Ansi.Color.CYAN).a("\nPlease select one of the following options to fix " +
                 "possibly affected federated users.").reset());
 
         System.out.println("\n\nPress '1' to revoke all affected access tokens\n");
-
         System.out.println("Press '2' to revoke all affected authorization codes\n");
-
         System.out.println("Press '3' to revoke all affected authorization codes & access tokens\n");
-
-        System.out.println("Press '4' to continue without further actions\n");
+        System.out.println("Press '4' to revoke all affected authorization codes & access tokens issued after\n");
+        System.out.println("Press '5' to continue without further actions\n");
     }
 
     private static void cancel() {
