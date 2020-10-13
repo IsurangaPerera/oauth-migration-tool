@@ -305,7 +305,7 @@
         <jacoco.version>0.8.3</jacoco.version>
         <commons-codec.version>1.4</commons-codec.version>
 
-        <org.junit.version>3.8.1</org.junit.version>
+        <org.junit.version>4.13.1</org.junit.version>
         <org.testng.version>6.11</org.testng.version>
 
         <!-- Carbon component versions -->
